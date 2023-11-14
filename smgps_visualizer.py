@@ -33,14 +33,12 @@ def generate_apery_set(M, p, first):
                 if (i - a) in apery_set:
                     apery_set.append(i)
                     generated.append(i)
-                    # print("{}. Self-generated element: {}".format(len(apery_set), i))
                     break 
             # If not, generate it with probability p
             else:
                 if random.random() < p:
                     apery_set.append(i)
                     new_elements.append(i)
-                    # print("{}. New element: {}".format(len(apery_set), i))
             if len(apery_set) == first:
                 break
     return apery_set, generated, new_elements, non_apery
