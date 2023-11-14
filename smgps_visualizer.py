@@ -13,10 +13,10 @@ def generate_apery_set(M, p, first):
     apery_set = [first]
     # print('1. First element is', first)
 
-    # times for self_generated and new_elements
-    times_self_generated = []
-    times_new_elements = []
-    times_non_apery = []
+    # times for generated and new_elements
+    generated = []
+    new_elements = [first]
+    non_apery = []
 
     print(first)
     # Generate apery set
@@ -24,7 +24,7 @@ def generate_apery_set(M, p, first):
         # Check if a representative of $a mod first$ is already in the apery set
         for a in apery_set:
             if (i - a) % first == 0:
-                times_non_apery.append(i)
+                non_apery.append(i)
                 break
         # If not add it to the apery set
         else:
@@ -32,70 +32,83 @@ def generate_apery_set(M, p, first):
             for a in apery_set: 
                 if (i - a) in apery_set:
                     apery_set.append(i)
-                    times_self_generated.append(i)
+                    generated.append(i)
                     # print("{}. Self-generated element: {}".format(len(apery_set), i))
                     break 
             # If not, generate it with probability p
             else:
                 if random.random() < p:
                     apery_set.append(i)
-                    times_new_elements.append(i)
+                    new_elements.append(i)
                     # print("{}. New element: {}".format(len(apery_set), i))
             if len(apery_set) == first:
                 break
-    return apery_set, times_self_generated, times_new_elements, times_non_apery
+    return apery_set, generated, new_elements, non_apery
 
 # Print statistics on a random apery set
-def print_statistics(apery_set, times_self_generated, times_new_elements):
+def print_statistics(apery_set, generated, new_elements):
     print("Statistics on apery set with M = {}, p = {} and first = {}".format(M, p, apery_set[0]))
     print("1. Number of elements in the apery set: {}".format(len(apery_set)))
-    print("2. Number of newly added elements: {}".format(len(times_new_elements)))
-    print("3. Ratio of newly added elements: {}".format(len(times_new_elements)/len(apery_set)))
+    print("2. Embedding dimension: {}".format(len(new_elements)))
+    print("3. Ratio of embedding dimension over multiplicity: {}".format(len(new_elements)/len(apery_set)))
     # Print the times of newly added elements and the times of self-generated elements, when printing times of new generated elements, print the time in square brakets
     # break the line when the number of elements in a line is more than 20
     for i,s in enumerate(apery_set):
-        if s in times_self_generated:
+        if s in generated:
             print(s, end = " ")
-        elif s in times_new_elements:
+        elif s in new_elements:
             print(">>>{}<<<".format(s), end = " ")
         if (i+1) % 20 == 0:
             print()
     for i,s in enumerate(apery_set):
-        if s in times_self_generated:
+        if s in generated:
             print("-", end = "")
-        elif s in times_new_elements:
+        elif s in new_elements:
             print("*".format(s), end = "")
         if (i+1) % 100 == 0:
             print()
     print()
+import matplotlib
 import matplotlib.pyplot as plt
+matplotlib.use("pgf")
+matplotlib.rcParams.update({
+    "pgf.texsystem": "pdflatex",
+    'font.family': 'serif',
+    'text.usetex': True,
+    'pgf.rcfonts': False,
+    'figure.autolayout': True
+})
 
 # make the same plot function, but to a png file
-def print_statistics_to_png(apery_set, times_self_generated, times_new_elements, times_non_apery):
+def print_statistics_to_png(apery_set, generated, new_elements, non_apery):
     # Create a plot
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    # Plot the times of self-generated elements
-    ax.plot(apery_set[0], [0.1], 'r.', marker='|')
-    ax.plot(times_self_generated, [0.1]*len(times_self_generated), 'g.', markersize=1)
-    # Plot the times of newly added elements
-    ax.plot(times_new_elements, [0.1]*len(times_new_elements), 'r.', marker='|')
-    # Plot the times of non-apery elements
+    # Plot the elements of the apery set that are not minimal
+    ax.plot(generated, [0.1]*len(generated), 'g.', markersize=1)
+    # Plot the elements of the minimal generating set with color red and marker '|'
+    ax.plot(new_elements, [0.1]*len(new_elements), 'r.', marker='|')
+    # Plot all the elements in the semigroup 
     ax.plot(apery_set[0], [-0.1], 'b.', markersize='1')
-    ax.plot(times_non_apery, [-0.1]*len(times_non_apery), 'b.', markersize='1')
-    ax.plot(times_self_generated, [-0.1]*len(times_self_generated), 'b.', markersize='1')
-    ax.plot(times_new_elements, [-0.1]*len(times_new_elements), 'b.', markersize='1')
+    ax.plot(non_apery, [-0.1]*len(non_apery), 'b.', markersize='1')
+    ax.plot(generated, [-0.1]*len(generated), 'b.', markersize='1')
+    ax.plot(new_elements, [-0.1]*len(new_elements), 'b.', markersize='1')
 
     # make the png file wider
-    ax.set_ylim([-0.75, 0.75])
-    fig.set_size_inches(15, 2)
-    fig.savefig('apery_set.png', dpi=500)
-    ax.set_xlabel('Elements')
-    ax.set_title('Apery set with M = {}, p = {} and first = {}'.format(M, p, apery_set[0])) 
-    # Close the png file
+    ax.set_ylim([-0.5, 0.5])
+    ax.set_xlim([0, generated[-1] + first])
+    fig.set_size_inches(5, 3)
+    # remove y ticks
+    ax.set_yticks([])
+    ax.set_title('$S(M, p)$ with $M$ = {} and $p$ = {}'.format(M, p, apery_set[0])) 
+    # Add legend
+    ax.legend(['Apéry set', 'Minimal generating set', 'Semigroup'], loc='lower right')
+    
     plt.close(fig)
+    fig.savefig('ertype_visual.png', dpi=500)
     # Print statistics on apery set
-    print_statistics(apery_set, times_self_generated, times_new_elements)
+    plt.show()
+    print_statistics(apery_set, generated, new_elements)
 
 
 M = 100000
@@ -106,6 +119,6 @@ while True:
         break
     first = int(first)
     p = 1.0 / first
-    apery_set, times_self_generated, times_new_elements, times_non_apery = generate_apery_set(M, p, first)
-    print_statistics_to_png(apery_set, times_self_generated, times_new_elements, times_non_apery)
+    apery_set, generated, new_elements, non_apery = generate_apery_set(M, p, first)
+    print_statistics_to_png(apery_set, generated, new_elements, non_apery)
 
