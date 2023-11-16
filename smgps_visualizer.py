@@ -103,7 +103,7 @@ def print_statistics_to_png(apery_set, generated, new_elements, non_apery):
     ax.legend(['Apéry set', 'Minimal generating set', 'Semigroup'], loc='lower right')
     
     plt.close(fig)
-    fig.savefig('ertype_visual.png', dpi=500)
+    fig.savefig('ertype_visual_{}_{}.pgf'.format(M, p), dpi=500)
     # Print statistics on apery set
     plt.show()
     print_statistics(apery_set, generated, new_elements)
